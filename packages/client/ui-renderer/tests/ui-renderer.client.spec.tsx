@@ -2,10 +2,18 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { act, cleanup } from '@testing-library/react'
 import { Context } from '@deepseek-ai/cordis'
+import type { ISessions, SessionListState } from '@deepseek-ai/dsh-api-session-controller/client'
+import { LocaleRuntime } from '@deepseek-ai/dsh-client-locale/client'
 import { SlotRegistry } from '../src/client/registry.ts'
 import type { SlotScopeAdapter, StandardSourceBinding } from '../src/client/index.ts'
 import { apply as nodeApply } from '@deepseek-ai/dsh-client-ui-renderer'
 import * as UiRenderer from '../src/client/index.ts'
+import type { PendingInteractionsView } from '../src/client/DesktopNotifications.tsx'
+
+/** A never-changing observable source for mounting the assembled application. */
+function constantSource<T>(value: T) {
+  return { getSnapshot: () => value, subscribe: () => () => {} }
+}
 
 const mounted: (() => void)[] = []
 
@@ -40,6 +48,18 @@ async function bench() {
     resolve: () => undefined,
   }
   slots.installScope('session', adapter)
+  // The local-patch overlay (desktop notifications) reads the sessions,
+  // uiSession, and locale services at mount; supply inert doubles.
+  ctx.provide('sessions', {
+    list: constantSource<SessionListState>({
+      ids: [], byId: {}, current: undefined, phase: 'ready',
+      subagentsByParent: {}, jobsBySession: {}, currentAddress: undefined,
+    }),
+  } as unknown as ISessions)
+  ctx.provide('uiSession', {
+    pendingInteractions: constantSource<PendingInteractionsView>(new Map()),
+  })
+  ctx.provide('locale', new LocaleRuntime(ctx))
   return { ctx, slots, fiber }
 }
 
