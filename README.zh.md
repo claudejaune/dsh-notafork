@@ -1,6 +1,24 @@
-# DeepSeek Harness
+# 带桌面通知的 DeepSeek Harness（DSH-notafork）
 
 [English](README.md) | 中文
+
+本仓库是 DeepSeek Harness 的小型分支（mini-fork），与官方版本的唯一区别是：任务完成或 harness 提问时会发出原生桌面通知。已在 Windows 11 的 Brave（Chromium 兼容）和 Firefox 上测试通过。
+
+通过右上角的铃铛图标开启/关闭通知。点击通知会跳转到发出该通知的浏览器标签页。
+
+使用方式：安装 Node.js，克隆仓库并运行：
+
+```sh
+git clone https://github.com/claudejaune/dsh-notafork.git
+cd dsh-notafork
+pnpm install
+pnpm run build
+pnpm dsh web
+```
+
+<img width="2281" height="938" alt="dsh-notafork-notif" src="https://github.com/user-attachments/assets/d046dcb0-47d5-493a-a48b-e71baee94ad6" />
+
+# DeepSeek Harness
 
 DeepSeek Harness（`dsh`）是由 [DeepSeek AI](https://deepseek.com) 开发的开源 agent harness（智能体框架）。
 
