@@ -1,3 +1,11 @@
+# DeepSeek Harness with Desktop Notifications (DSH-notafork)
+
+This is a mini-fork of the DeepSeek harness. The only difference from stock is native desktop notifications when a task completes or the harness asks a question. Tested on Windows 11 with Brave (Chromium-compatible) and Firefox.
+
+Turn notifications on/off using the Bell icon on the top-right. Clicking a notification will take you to the tab that sent you the notification.
+
+<img width="2281" height="938" alt="dsh-notafork-notif" src="https://github.com/user-attachments/assets/d046dcb0-47d5-493a-a48b-e71baee94ad6" />
+
 # DeepSeek Harness
 
 English | [中文](README.zh.md)
