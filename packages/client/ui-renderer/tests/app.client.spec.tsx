@@ -11,8 +11,7 @@ import type { Translate } from '@deepseek-ai/dsh-client-ui-slots'
 import { buildRenderApp } from '../src/client/app.tsx'
 import { bindSnapshotSelector } from '../src/client/bind.ts'
 import { DesktopNotifications, type PendingInteractionsView } from '../src/client/DesktopNotifications.tsx'
-import { NotificationsToggle } from '../src/client/NotificationsToggle.tsx'
-import { notificationsEnabled, setNotificationsEnabled } from '../src/client/notification-preference.ts'
+import { setNotificationsEnabled } from '../src/client/notification-preference.ts'
 import { en, type RendererKey } from '../src/client/locales.ts'
 
 /** English translate stub: dictionary lookup at the keys the components pass. */
@@ -247,48 +246,5 @@ describe('DesktopNotifications', () => {
     })
     expect(notificationSpy).not.toHaveBeenCalled()
     setNotificationsEnabled(true)
-  })
-})
-
-describe('NotificationsToggle', () => {
-  beforeEach(() => {
-    storage.clear()
-    // The DesktopNotifications describe tears down stubbed globals in its
-    // afterEach, including the file-level localStorage shim. Re-wire the
-    // shared `storage` Map to localStorage so the component's writes land here.
-    vi.stubGlobal('localStorage', localStorageShim)
-  })
-
-  it('renders enabled by default when no preference is stored', () => {
-    const view = render(<NotificationsToggle t={t} />)
-    const button = view.getByRole('button')
-    expect(button.getAttribute('aria-pressed')).toBe('true')
-    expect(notificationsEnabled()).toBe(true)
-  })
-
-  it('flips to disabled and persists when clicked', () => {
-    const view = render(<NotificationsToggle t={t} />)
-    const button = view.getByRole('button')
-    act(() => { button.click() })
-    expect(button.getAttribute('aria-pressed')).toBe('false')
-    expect(notificationsEnabled()).toBe(false)
-    expect(storage.get('dsh-desktop-notifications')).toBe('0')
-  })
-
-  it('reflects a persisted disabled preference on mount', () => {
-    storage.set('dsh-desktop-notifications', '0')
-    const view = render(<NotificationsToggle t={t} />)
-    expect(view.getByRole('button').getAttribute('aria-pressed')).toBe('false')
-    expect(notificationsEnabled()).toBe(false)
-  })
-
-  it('re-enables and persists when clicked from the disabled state', () => {
-    storage.set('dsh-desktop-notifications', '0')
-    const view = render(<NotificationsToggle t={t} />)
-    const button = view.getByRole('button')
-    act(() => { button.click() })
-    expect(button.getAttribute('aria-pressed')).toBe('true')
-    expect(notificationsEnabled()).toBe(true)
-    expect(storage.get('dsh-desktop-notifications')).toBe('1')
   })
 })

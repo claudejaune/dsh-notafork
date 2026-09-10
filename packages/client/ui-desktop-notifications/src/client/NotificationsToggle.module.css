@@ -1,0 +1,28 @@
+/* The toggle capsule matches the header's 28px control row exactly as the
+   open-in-app split button does: 28px height, pill radius, hairline l4
+   border, so both controls read as the same size inside `.headerUtilities`. */
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  height: 28px;
+  min-width: 28px;
+  padding: 0 7px;
+  border: 0.5px solid var(--dsw-alias-border-l4);
+  border-radius: 14px;
+  background: none;
+  color: var(--dsw-alias-label-primary);
+  cursor: pointer;
+}
+
+.toggle:hover:not(:disabled),
+.toggle:focus-visible {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+/* The off state uses the dimmed label token instead of an opacity hack. */
+.toggle[data-enabled='false'] {
+  color: var(--dsw-alias-label-dimmed);
+}

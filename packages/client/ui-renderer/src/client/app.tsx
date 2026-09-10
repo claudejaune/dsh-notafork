@@ -17,7 +17,6 @@ import type {} from '@deepseek-ai/dsh-api-session-controller/client'
 import type { HostObservable, Translate } from '@deepseek-ai/dsh-client-ui-slots'
 import { bindSnapshotSelector } from './bind.ts'
 import { DesktopNotifications, type PendingInteractionView } from './DesktopNotifications.tsx'
-import { NotificationsToggle } from './NotificationsToggle.tsx'
 import { en, zh } from './locales.ts'
 
 /** Locale namespace owned by this package's overlay copy. */
@@ -74,7 +73,6 @@ export function buildRenderApp(deps: AssemblyDeps): () => ReactNode {
     useLocale(snapshot => snapshot.revision)
     return (
       <>
-        <NotificationsToggle t={t} />
         <DesktopNotifications
           useSessions={useSessions}
           usePendingInteractions={usePendingInteractions}

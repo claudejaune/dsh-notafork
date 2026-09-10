@@ -1,23 +1,24 @@
 /**
  * Desktop-notification user preference, persisted in localStorage. This
- * module owns reads (the side-effect host reads it at fire time); the writer
- * is the Session-header toggle in `@deepseek-ai/dsh-client-ui-desktop-notifications`,
- * which persists the same key. No reactive store is needed because firing
- * only depends on the value at the moment of a transition. Uses localStorage
- * directly — no settings capability, so the shell stays out of the
+ * module owns writes (the toggle is the sole writer); the reader at fire
+ * time is the renderer assembly's side-effect host
+ * (`@deepseek-ai/dsh-client-ui-renderer`), which reads the same key with its
+ * own minimal accessor. No reactive store is needed because firing only
+ * depends on the value at the moment of a transition. Uses localStorage
+ * directly — no settings capability, so the feature stays out of the
  * settings/locale dependency graph.
  */
 
 /**
  * localStorage key holding `'1'` (enabled, the default) or `'0'` (disabled).
- * Shared by value with the toggle's writer; both sides must spell the same
- * key.
+ * Shared by value with the renderer assembly's reader; both sides must spell
+ * the same key.
  */
 const NOTIFICATIONS_PREF_KEY = 'dsh-desktop-notifications'
 
 /**
- * Whether desktop notifications are enabled. Defaults to `true` when the API,
- * storage, or stored value is absent or unparsable — a missing preference
+ * Whether desktop notifications are enabled. Defaults to `true` when the
+ * storage or stored value is absent or unparsable — a missing preference
  * never silently disables a working feature.
  * @returns the persisted preference, defaulting to enabled.
  */

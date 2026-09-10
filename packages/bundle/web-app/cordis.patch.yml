@@ -72,6 +72,11 @@
     - id: ui-open-in-app
       name: '@deepseek-ai/dsh-client-ui-open-in-app'
 
+    # Session-header desktop-notifications toggle capsule; the notification
+    # side-effect host stays in the ui-renderer assembly row above.
+    - id: ui-desktop-notifications
+      name: '@deepseek-ai/dsh-client-ui-desktop-notifications'
+
     - id: workspace
       name: '@deepseek-ai/dsh-workspace'
 
