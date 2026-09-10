@@ -52,9 +52,11 @@ function byId(id: string): OpenInAppApp {
   return app
 }
 
-/** Internals baseline every call completes: a rejecting runner and an empty PATH. */
+/** Internals baseline every call completes: a rejecting runner and an empty PATH.
+    `osRelease` is pinned so WSL detection reads the fixture, not the host kernel —
+    the suite must behave identically on desktop Linux and WSL. */
 function bare(overrides: OpenInAppInternals): OpenInAppInternals {
-  return { env: {}, run: runner(() => null), resolveExecutable: pathTable(), ...overrides }
+  return { env: {}, osRelease: '6.8.0-generic', run: runner(() => null), resolveExecutable: pathTable(), ...overrides }
 }
 
 /** Hermetic Linux environment: XDG lookups stay inside the temp home. */
