@@ -14,7 +14,7 @@ Status: implemented
 
 选择器在 Client 暴露的两个框架数据源上保持纯净：会话列表（`ctx.sessions.list`）投影出逐会话的 `{ id, title, running }` 表面，相等判断仅基于 `id` + `running`；而 `uiSession` 服务的 `pendingInteractions` 映射作为独立快照读取（仅在交互到来或清除时替换引用）。一个以两个切片为依赖的 `useEffect` 与上一份 ref 做差分并触发通知。`notify()` 在 `Notification.permission !== 'granted'` 或标签页可见时直接返回；权限在第一次 `pointerdown`（一次用户手势）时请求，绝不在加载时请求；且 `Notification` 实例的 `onclick` 调用 `window.focus()`，使点击通知在 Windows 上（Chrome/Edge/Firefox）把 harness 标签页及其窗口带到前台。通知标题由 locale 拥有：按挂起交互的 `kind` 判别键在 `renderer` 命名空间词典中解析（遵循 [客户端 UI 文案归 locale 所有的决策](../architecture/2026-08-23-locale-owned-client-ui-copy.zh.md)）。
 
-"Done" 以 `running` 切换（busy → idle）为依据——而非 `SessionSummary.completed`，后者按 [完成提醒点笔记](2026-08-06-session-completed-done-dot.zh.md) 只为未被选中的会话置位，因此对操作者正在观看的会话永不触发。当会话停止是为了请求交互时，"Done" 被抑制，使一次切换不会同时叠出 "Done" 与 "Waiting for approval" 两条通知。
+"Done" 以 `running` 切换（busy → idle）为依据——而非 `SessionSummary.completed`，后者按 [完成提醒点笔记](../../archived/feature/2026-08-06-session-completed-done-dot.md) 只为未被选中的会话置位，因此对操作者正在观看的会话永不触发。当会话停止是为了请求交互时，"Done" 被抑制，使一次切换不会同时叠出 "Done" 与 "Waiting for approval" 两条通知。
 
 ## 考虑过的替代方案
 
