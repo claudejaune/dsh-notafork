@@ -14,6 +14,7 @@ import * as LlmPiAi from '@deepseek-ai/dsh-llm-pi-ai'
 import { PiAiAdapter } from '@deepseek-ai/dsh-llm-pi-ai'
 import { MAX_TIMER_DELAY_MS } from '@deepseek-ai/dsh-timeout'
 import { getBuiltinModels } from '@earendil-works/pi-ai/providers/all'
+import { isOpenCodeRoute } from '../src/adapter.ts'
 import { DEFAULT_MAX_REQUEST_IMAGE_BYTES, resolveProfiles } from '../src/config.ts'
 import { memoryAuth } from './auth-double.ts'
 import { assemble } from './assemble.ts'
@@ -50,6 +51,21 @@ async function harness(baseURL: string, overrides: Record<string, unknown> = {})
   await ctx.plugin(LlmRuntime)
   await ctx.plugin(LlmPiAi, {
     providers: { deepseek: { apiKeyEnv: 'PI_TEST_KEY', baseURL, ...overrides } },
+  })
+  return ctx
+}
+
+/** The same mount under an arbitrary route key, for route-specific behavior. */
+async function harnessFor(
+  provider: string,
+  baseURL: string,
+  overrides: Record<string, unknown> = {},
+): Promise<Context> {
+  vi.stubEnv('PI_TEST_KEY', 'test-key')
+  const ctx = new Context()
+  await ctx.plugin(LlmRuntime)
+  await ctx.plugin(LlmPiAi, {
+    providers: { [provider]: { apiKeyEnv: 'PI_TEST_KEY', baseURL, ...overrides } },
   })
   return ctx
 }
@@ -121,6 +137,46 @@ describe('PiAiAdapter provider routing', () => {
     await assemble(ctx, { model: 'deepseek-v4-flash', messages: [] })
     expect(server.headers[0]?.['x-company']).toBe('private')
     expect(server.headers[0]?.['user-agent']).toBe(userAgent())
+  })
+
+  it('stamps the conversation id as x-opencode-session on OpenCode routes', async () => {
+    const server = await mockServer([{ events: textEvents }])
+    const ctx = await harnessFor('opencode-go', server.url)
+    await assemble(ctx, {
+      provider: 'opencode-go',
+      model: 'deepseek-v4-flash',
+      messages: [],
+      sessionId: 'session-for-pi' as never,
+    })
+    expect(server.headers[0]?.['x-opencode-session']).toBe('session-for-pi')
+  })
+
+  it('leaves x-opencode-session off routes outside the OpenCode gateway', async () => {
+    const server = await mockServer([{ events: textEvents }])
+    const ctx = await harness(server.url)
+    await assemble(ctx, { model: 'deepseek-v4-flash', messages: [], sessionId: 'session-for-pi' as never })
+    expect(server.headers[0]?.['x-opencode-session']).toBeUndefined()
+  })
+
+  it('replaces a static x-opencode-session profile header with the conversation id', async () => {
+    const server = await mockServer([{ events: textEvents }])
+    const ctx = await harnessFor('opencode-go', server.url, { headers: { 'x-opencode-session': 'static' } })
+    await assemble(ctx, {
+      provider: 'opencode-go',
+      model: 'deepseek-v4-flash',
+      messages: [],
+      sessionId: 'session-for-pi' as never,
+    })
+    expect(server.headers[0]?.['x-opencode-session']).toBe('session-for-pi')
+  })
+
+  it('recognizes OpenCode routes by key and by endpoint host', () => {
+    expect(isOpenCodeRoute('opencode', 'https://opencode.ai/zen/v1')).toBe(true)
+    expect(isOpenCodeRoute('opencode-go', 'https://opencode.ai/zen/go/v1')).toBe(true)
+    expect(isOpenCodeRoute('my-go-route', 'https://opencode.ai/zen/go/v1')).toBe(true)
+    expect(isOpenCodeRoute('my-go-route', 'https://edge.opencode.ai/zen/go/v1')).toBe(true)
+    expect(isOpenCodeRoute('openai', 'https://api.openai.com/v1')).toBe(false)
+    expect(isOpenCodeRoute('my-route', 'not-an-absolute-url')).toBe(false)
   })
 
   it('forwards common stream options and profile reasoning', async () => {

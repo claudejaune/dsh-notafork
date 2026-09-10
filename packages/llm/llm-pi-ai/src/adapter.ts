@@ -201,12 +201,47 @@ function reasoningInfo(
   }
 }
 
-/** Merge deployment headers while removing case-insensitive attribution collisions. */
-function requestHeaders(headers: Readonly<Record<string, string>> | undefined): Record<string, string> {
+/** The managed-inference gateway whose inference endpoints require a per-conversation session id. */
+const OPENCODE_HOST = 'opencode.ai'
+
+/**
+ * Whether one route targets an OpenCode gateway, whose inference endpoints
+ * require the `x-opencode-session` header. The route key covers the installed
+ * `opencode` and `opencode-go` catalog routes; the resolved endpoint host also
+ * covers a hand-declared route pointed at the same gateway under another key.
+ * @param provider - the resolved route key.
+ * @param baseUrl - the resolved model endpoint.
+ * @returns whether requests to this route carry the OpenCode session header.
+ */
+export function isOpenCodeRoute(provider: string, baseUrl: string): boolean {
+  if (provider === 'opencode' || provider.startsWith('opencode-')) return true
+  try {
+    const host = new URL(baseUrl).hostname
+    return host === OPENCODE_HOST || host.endsWith(`.${OPENCODE_HOST}`)
+  } catch {
+    // A non-absolute endpoint cannot name the gateway; the route key already decided.
+    return false
+  }
+}
+
+/**
+ * Merge deployment headers, a provider-contract session header, and Harness
+ * attribution, in increasing precedence. A per-conversation session header
+ * replaces a same-named static profile entry because a fixed value cannot do
+ * that job; attribution names are Harness-owned and win every collision.
+ * @param headers - profile-configured request headers.
+ * @param sessionHeader - the per-conversation header, when the route requires one.
+ * @returns the merged header record for one provider request.
+ */
+function requestHeaders(
+  headers: Readonly<Record<string, string>> | undefined,
+  sessionHeader: Readonly<Record<string, string>> | undefined,
+): Record<string, string> {
   const attribution = attributionHeaders()
   const reserved = new Set(Object.keys(attribution).map(name => name.toLowerCase()))
   return {
     ...Object.fromEntries(Object.entries(headers ?? {}).filter(([name]) => !reserved.has(name.toLowerCase()))),
+    ...sessionHeader,
     ...attribution,
   }
 }
@@ -377,6 +412,11 @@ export class PiAiAdapter extends LlmAdapter {
             maxBytes: profile.requestImageMaxBytes,
           },
         }, onReplayDegrade)
+      // The OpenCode gateway requires a stable per-conversation id on every
+      // inference request; pi-ai's own affinity formats do not emit this header.
+      const openCodeSession = options.sessionId !== undefined && isOpenCodeRoute(model.provider, model.baseUrl)
+        ? { 'x-opencode-session': String(options.sessionId) }
+        : undefined
       const events = snapshot.models.streamSimple(model, context, {
         ...profileOptions(profile, reasoning, apiKey),
         ...options.temperature === undefined ? {} : { temperature: options.temperature },
@@ -385,7 +425,7 @@ export class PiAiAdapter extends LlmAdapter {
         signal: watchdog.signal,
         // Profile headers are deployment-owned; attribution names are
         // Harness-owned and therefore win collisions.
-        headers: requestHeaders(profile.headers),
+        headers: requestHeaders(profile.headers, openCodeSession),
       })
       const iterator = toStreamChunks(events, model.contextWindow, options.signal, model.id)[Symbol.asyncIterator]()
       let exhausted = false

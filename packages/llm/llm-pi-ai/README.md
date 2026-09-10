@@ -86,6 +86,8 @@ Each profile may set a `retryPolicy`; omission uses normal mode with five retrie
 | `maxRequestImageBytes` | `20 MiB` | Aggregate base64 image-payload bound with oldest-first offload |
 | `retryPolicy` | normal, 5 retries | Provider-owned retry policy executed by `dsh-llm-retry` |
 
+Requests to an OpenCode gateway — the `opencode` and `opencode-go` catalog routes, or any route whose resolved endpoint host is `opencode.ai` — automatically carry `x-opencode-session` set to the request's conversation id. The gateway requires this stable per-conversation value for routing and prompt-cache affinity; a same-named entry in `headers` is replaced, because a fixed value cannot identify a conversation. Other routes are unaffected.
+
 The generated [configuration catalog](../../../docs/config-catalog.md#deepseek-aidsh-llm-pi-ai) is the exhaustive source for every accepted field and its JSDoc.
 
 ### Sign in to a provider

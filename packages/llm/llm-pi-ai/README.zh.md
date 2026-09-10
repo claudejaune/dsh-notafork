@@ -86,6 +86,8 @@ kind: "package-reference"
 | `maxRequestImageBytes` | `20 MiB` | 带最旧优先卸载的 base64 图片载荷总上限 |
 | `retryPolicy` | normal，5 次重试 | 由 `dsh-llm-retry` 执行的提供方自有重试策略 |
 
+发往 OpenCode 网关的请求——`opencode` 与 `opencode-go` 目录路由，或任何解析后的端点主机为 `opencode.ai` 的路由——会自动携带 `x-opencode-session`，其值为该请求的会话 id。网关要求这一稳定的按会话取值以进行路由与提示缓存亲和；`headers` 中的同名条目会被替换，因为固定值无法标识会话。其他路由不受影响。
+
 生成的[配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-llm-pi-ai)是每个受支持字段及其 JSDoc 的穷尽式真源。
 
 ### 登录提供方
