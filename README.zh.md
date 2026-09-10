@@ -2,9 +2,13 @@
 
 [English](README.md) | 中文
 
-本仓库是 DeepSeek Harness 的小型分支（mini-fork），与官方版本的唯一区别是：任务完成或 harness 提问时会发出原生桌面通知。已在 Windows 11 的 Brave（Chromium 兼容）和 Firefox 上测试通过。
+本仓库是 DeepSeek Harness 的软分支（soft-fork），与官方版本的唯一区别是：任务完成或 harness 提问时会发出原生桌面通知。已在 Windows 11 的 Brave（Chromium 兼容）和 Firefox 上测试通过。
+
+在本 `x-opencode-session` 头部问题于上游修复之前，本分支也可使用 OpenCode Go 订阅。详见[该讨论](https://github.com/deepseek-ai/deepseek-harness/discussions/5495)。
 
 通过右上角的铃铛图标开启/关闭通知。点击通知会跳转到发出该通知的浏览器标签页。
+
+<img width="2281" height="938" alt="dsh-notafork-notif" src="https://github.com/user-attachments/assets/d046dcb0-47d5-493a-a48b-e71baee94ad6" />
 
 使用方式：安装 Node.js，克隆仓库并运行：
 
@@ -16,7 +20,7 @@ pnpm run build
 pnpm dsh web
 ```
 
-<img width="2281" height="938" alt="dsh-notafork-notif" src="https://github.com/user-attachments/assets/d046dcb0-47d5-493a-a48b-e71baee94ad6" />
+完整上游 README 见下：
 
 # DeepSeek Harness
 
